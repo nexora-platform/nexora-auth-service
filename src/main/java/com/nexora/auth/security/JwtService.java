@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
@@ -19,8 +20,8 @@ public class JwtService {
         return Keys.hmacShaKeyFor(SECRET.getBytes());
     }
 
+    // Generate token based on email (username)
     public String generateToken(String email) {
-
         return Jwts.builder()
                 .setSubject(email)
                 .setIssuedAt(new Date())
@@ -29,12 +30,23 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractEmail(String token) {
+    // Extract username/email from token
+    public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
 
-    private Claims extractAllClaims(String token) {
+    // Validate token against UserDetails
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        final String username = extractUsername(token);
+        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+    }
 
+    private boolean isTokenExpired(String token) {
+        return extractAllClaims(token).getExpiration().before(new Date());
+    }
+
+    // Extract all claims
+    private Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignKey())
                 .build()
