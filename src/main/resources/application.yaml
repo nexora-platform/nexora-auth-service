@@ -6,29 +6,25 @@ spring:
     name: nexora-auth-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/nexora_auth
+    url: jdbc:postgresql://localhost:5433/nexora_auth   # نفس البورت والاسم
     username: postgres
     password: postgres
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
+    show-sql: true
     properties:
       hibernate:
         format_sql: true
-    show-sql: true
-
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
+  instance:
+    prefer-ip-address: true
