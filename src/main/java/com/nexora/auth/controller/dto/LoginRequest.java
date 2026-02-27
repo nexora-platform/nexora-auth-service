@@ -1,4 +1,4 @@
-package com.nexora.auth.dto;
+package com.nexora.auth.controller.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
