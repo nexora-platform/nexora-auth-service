@@ -1,5 +1,6 @@
 package com.nexora.auth.service;
 
+import com.nexora.auth.client.TenantClient;
 import com.nexora.auth.controller.dto.*;
 import com.nexora.auth.entity.User;
 import com.nexora.auth.repository.UserRepository;
@@ -16,9 +17,12 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final TenantClient tenantClient;
 
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
+
+        tenantClient.validateTenant(request.getTenantId());
 
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
