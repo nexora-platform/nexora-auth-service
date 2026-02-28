@@ -1,5 +1,7 @@
 package com.nexora.auth.entity;
 
+import com.nexora.auth.tenant.TenantAware;
+import com.nexora.auth.tenant.TenantEntityListener;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,12 +10,13 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "users")
+@EntityListeners(TenantEntityListener.class)
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class User {
+public class User implements TenantAware {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -41,6 +44,10 @@ public class User {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    // ========================
+    // JPA Lifecycle
+    // ========================
+
     @PrePersist
     public void prePersist() {
         createdAt = LocalDateTime.now();
@@ -50,5 +57,19 @@ public class User {
     @PreUpdate
     public void preUpdate() {
         updatedAt = LocalDateTime.now();
+    }
+
+    // ========================
+    // TenantAware Implementation
+    // ========================
+
+    @Override
+    public UUID getTenantId() {
+        return tenantId;
+    }
+
+    @Override
+    public void setTenantId(UUID tenantId) {
+        this.tenantId = tenantId;
     }
 }
