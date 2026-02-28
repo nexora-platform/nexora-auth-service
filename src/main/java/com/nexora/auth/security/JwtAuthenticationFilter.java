@@ -12,6 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.UUID;
+import com.nexora.auth.tenant.TenantContext;
 
 @Component
 @RequiredArgsConstructor
@@ -41,18 +42,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         Claims claims = jwtService.extractAllClaims(token);
 
-        AuthenticatedUser user = new AuthenticatedUser(
-                UUID.fromString(claims.get("userId", String.class)),
-                UUID.fromString(claims.get("tenantId", String.class)),
-                claims.getSubject(),
-                claims.get("role", String.class)
-        );
+        try {
 
-        UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+            UUID tenantId = UUID.fromString(claims.get("tenantId", String.class));
 
-        SecurityContextHolder.getContext().setAuthentication(authToken);
+            // ⭐ SET TENANT CONTEXT
+            TenantContext.setTenantId(tenantId);
 
-        filterChain.doFilter(request, response);
+            AuthenticatedUser user = new AuthenticatedUser(
+                    UUID.fromString(claims.get("userId", String.class)),
+                    tenantId,
+                    claims.getSubject(),
+                    claims.get("role", String.class)
+            );
+
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            user,
+                            null,
+                            user.getAuthorities()
+                    );
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+
+            filterChain.doFilter(request, response);
+
+        } finally {
+            // ⭐ VERY IMPORTANT (production safety)
+            TenantContext.clear();
+        }
     }
 }
