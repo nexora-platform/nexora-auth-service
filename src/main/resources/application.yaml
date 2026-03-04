@@ -6,7 +6,7 @@ spring:
     name: nexora-auth-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5433/nexora_auth   # نفس البورت والاسم
+    url: jdbc:postgresql://localhost:5433/nexora_auth
     username: postgres
     password: postgres
 
